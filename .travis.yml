@@ -1,0 +1,24 @@
+sudo: required
+language: generic
+
+services:
+  - docker
+
+before_install:
+  - docker build -t prabum01/complex-client-tests -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run -e CI=true prabum01/complex-client-tests npm test
+
+after_success:
+  - docker build -t prabum01/complex-client ./client
+  - docker build -t prabum01/complex-server ./server
+  - docker build -t prabum01/complex-nginx ./nginx
+  - docker build -t prabum01/complex-worker ./worker
+  # Login to docker cli
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  #Push to docker hub
+  - docker push prabum01/complex-client
+  - docker push prabum01/complex-server
+  - docker push prabum01/complex-nginx
+  - docker push prabum01/complex-worker
